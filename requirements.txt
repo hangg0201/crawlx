@@ -3,3 +3,4 @@ playwright
 gspread
 oauth2client
 jmespath
+gunicorn
