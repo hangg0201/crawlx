@@ -29,6 +29,8 @@ def save_tweet_data(tweet_data_list, file_path="tweet_data.json"):
 
 app = Flask(__name__)
 
+import os  # Thêm thư viện os để đọc biến môi trường
+
 # Google Sheets Configuration
 def update_google_sheet(sheet_name: str, worksheet_name: str, tweet_url: str, parsed_data: dict):
     # Kết nối với Google Sheets API
@@ -36,7 +38,12 @@ def update_google_sheet(sheet_name: str, worksheet_name: str, tweet_url: str, pa
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    # Lấy credentials từ biến môi trường
+    google_credentials = os.environ.get("GOOGLE_CREDENTIALS")
+    if not google_credentials:
+        raise ValueError("GOOGLE_CREDENTIALS environment variable not set")
+    
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(google_credentials), scope)
     client = gspread.authorize(creds)
 
     # Mở Google Sheet và worksheet
@@ -64,6 +71,7 @@ def update_google_sheet(sheet_name: str, worksheet_name: str, tweet_url: str, pa
     # Thêm hàng mới vào sheet
     worksheet.append_row(row_data)
 
+
 def update_google_sheet_row(sheet_name: str, worksheet_name: str, tweet_url: str, updated_data: dict):
     """
     Cập nhật một hàng cụ thể trong Google Sheet dựa trên URL.
@@ -73,7 +81,12 @@ def update_google_sheet_row(sheet_name: str, worksheet_name: str, tweet_url: str
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    # Lấy credentials từ biến môi trường
+    google_credentials = os.environ.get("GOOGLE_CREDENTIALS")
+    if not google_credentials:
+        raise ValueError("GOOGLE_CREDENTIALS environment variable not set")
+    
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(google_credentials), scope)
     client = gspread.authorize(creds)
 
     # Mở Google Sheet và worksheet
@@ -108,6 +121,7 @@ def update_google_sheet_row(sheet_name: str, worksheet_name: str, tweet_url: str
                 row_data.append("")
         row_data.append(updated_data["time_remaining"])
         worksheet.append_row(row_data)
+
 
 
 def update_sheets_periodically(sheet_name: str, worksheet_name: str):
